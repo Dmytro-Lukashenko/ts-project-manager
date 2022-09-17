@@ -46,8 +46,6 @@ class ProjectState extends State<Project> {
     return this.instance;
   }
 
-  
-
   addProject(title: string, description: string, numOfpeople: number){
     const newProject = new Project(String(Date.now()), title, description, numOfpeople, ProjectStatus.Active)
     this.projects.push(newProject);
@@ -142,6 +140,45 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   abstract renderContent(): void;
 }
 
+//Project Item Class
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+  private project: Project;
+
+  get persons(){
+    if (this.project.numOfPeople === 1){
+      return "1 person";
+    } else {
+      return `${this.project.numOfPeople} persons`
+    }
+  }
+
+  constructor(hostId: string, project: Project){
+    super('single-project', hostId, false, project.id);
+    this.project = project;
+    this.configure();
+    this.renderContent();
+  }
+
+  configure(){}
+  
+  renderContent(){
+    const h2Elem = this.element.querySelector('h2');
+    const h3Elem = this.element.querySelector('h3');
+    const pElem = this.element.querySelector('p');
+    if (h2Elem){
+      h2Elem.textContent = this.project.title;
+    }
+    if (h3Elem){
+      h3Elem.textContent = this.persons + ' assigned';
+    }
+    if (pElem){
+      pElem.textContent = this.project.description;
+    }
+
+  }
+  
+}
+
 //Project List Class
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {  
   assignedProject: Project[];
@@ -181,9 +218,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     const listEl = document.getElementById(`${this.type}-projects-list`) as HTMLUListElement;
     listEl.innerHTML = "";
     for (const prjItem of this.assignedProject){
-      const listItem = document.createElement('li');
-      listItem.textContent = prjItem.title;
-      listEl?.appendChild(listItem);
+      new ProjectItem(this.element.querySelector('ul')!.id, prjItem);
     }
   }
 

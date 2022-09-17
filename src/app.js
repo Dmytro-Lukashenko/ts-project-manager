@@ -122,6 +122,45 @@ var Component = /** @class */ (function () {
     };
     return Component;
 }());
+//Project Item Class
+var ProjectItem = /** @class */ (function (_super) {
+    __extends(ProjectItem, _super);
+    function ProjectItem(hostId, project) {
+        var _this = _super.call(this, 'single-project', hostId, false, project.id) || this;
+        _this.project = project;
+        _this.configure();
+        _this.renderContent();
+        return _this;
+    }
+    Object.defineProperty(ProjectItem.prototype, "persons", {
+        get: function () {
+            if (this.project.numOfPeople === 1) {
+                return "1 person";
+            }
+            else {
+                return "".concat(this.project.numOfPeople, " persons");
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
+    ProjectItem.prototype.configure = function () { };
+    ProjectItem.prototype.renderContent = function () {
+        var h2Elem = this.element.querySelector('h2');
+        var h3Elem = this.element.querySelector('h3');
+        var pElem = this.element.querySelector('p');
+        if (h2Elem) {
+            h2Elem.textContent = this.project.title;
+        }
+        if (h3Elem) {
+            h3Elem.textContent = this.persons + ' assigned';
+        }
+        if (pElem) {
+            pElem.textContent = this.project.description;
+        }
+    };
+    return ProjectItem;
+}(Component));
 //Project List Class
 var ProjectList = /** @class */ (function (_super) {
     __extends(ProjectList, _super);
@@ -164,9 +203,7 @@ var ProjectList = /** @class */ (function (_super) {
         listEl.innerHTML = "";
         for (var _i = 0, _a = this.assignedProject; _i < _a.length; _i++) {
             var prjItem = _a[_i];
-            var listItem = document.createElement('li');
-            listItem.textContent = prjItem.title;
-            listEl === null || listEl === void 0 ? void 0 : listEl.appendChild(listItem);
+            new ProjectItem(this.element.querySelector('ul').id, prjItem);
         }
     };
     return ProjectList;
