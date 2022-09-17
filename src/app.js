@@ -4,8 +4,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-// Auto decorator
-var autobind = function (_, _2, descriptor) {
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+// autobind decorator
+function autobind(_, _2, descriptor) {
     var originalMethod = descriptor.value;
     var adjDescriptor = {
         configurable: true,
@@ -15,8 +18,55 @@ var autobind = function (_, _2, descriptor) {
         }
     };
     return adjDescriptor;
+}
+var validate = function (validatableInput) {
+    var isValid = true;
+    if (validatableInput.required) {
+        isValid = isValid && validatableInput.required.toString().trim().length !== 0;
+    }
+    if (validatableInput.minLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+    }
+    if (validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+    }
+    if (validatableInput.min != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value >= validatableInput.min;
+    }
+    if (validatableInput.max != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value <= validatableInput.max;
+    }
+    return isValid;
 };
-// ProjectInputClass
+//Project List Class
+var ProjectList = /** @class */ (function () {
+    function ProjectList(type) {
+        this.type = type;
+        this.templateElement = document.getElementById('project-list');
+        this.hostElement = document.getElementById('app');
+        var importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
+        this.element.id = "".concat(this.type, "-projects");
+        this.renderContent();
+        this.attach();
+    }
+    ProjectList.prototype.renderContent = function () {
+        var listId = "".concat(this.type, "-projects-list");
+        var ul = this.element.querySelector('ul');
+        var h2 = this.element.querySelector('h2');
+        if (ul) {
+            ul.id = listId;
+        }
+        if (h2) {
+            h2.textContent = "".concat(this.type.toUpperCase(), " PROJECTS");
+        }
+    };
+    ProjectList.prototype.attach = function () {
+        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    };
+    return ProjectList;
+}());
+// ProjectInput Class
 var ProjectInput = /** @class */ (function () {
     function ProjectInput() {
         this.templateElement = document.getElementById('project-input');
@@ -30,20 +80,63 @@ var ProjectInput = /** @class */ (function () {
         this.configure();
         this.attach();
     }
+    ProjectInput.prototype.gatherUserInput = function () {
+        var enteredTitle = this.titleInputElement.value;
+        var enteredDescription = this.descriptionInputElement.value;
+        var enteredPeople = this.peopleInputElement.value;
+        var titleValidatable = {
+            value: enteredTitle,
+            required: true,
+        };
+        var descriptionValidatable = {
+            value: enteredDescription,
+            required: true,
+            minLength: 5,
+        };
+        var peopleValidatable = {
+            value: Number(enteredPeople),
+            required: true,
+            min: 1,
+            max: 5,
+        };
+        if (!validate(titleValidatable) ||
+            !validate(descriptionValidatable) ||
+            !validate(peopleValidatable)) {
+            console.log('Enter an information please');
+            return;
+        }
+        else {
+            return [enteredTitle, enteredDescription, Number(enteredPeople)];
+        }
+    };
+    ProjectInput.prototype.clearInputs = function () {
+        this.titleInputElement.value = "";
+        this.descriptionInputElement.value = "";
+        this.peopleInputElement.value = "";
+    };
     ProjectInput.prototype.submitHandler = function (event) {
         event.preventDefault();
-        console.log(this.titleInputElement.value);
+        var userInput = this.gatherUserInput();
+        if (Array.isArray(userInput)) {
+            var title = userInput[0], desc = userInput[1], people = userInput[2];
+            console.log(title, desc, people);
+            this.clearInputs();
+        }
     };
     ProjectInput.prototype.configure = function () {
         this.element.addEventListener('submit', this.submitHandler);
     };
     ProjectInput.prototype.attach = function () {
-        var _a;
-        (_a = this.hostElement) === null || _a === void 0 ? void 0 : _a.insertAdjacentElement('afterbegin', this.element);
+        this.hostElement.insertAdjacentElement('afterbegin', this.element);
     };
     __decorate([
-        autobind
-    ], ProjectInput.prototype, "submitHandler");
+        autobind,
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Event]),
+        __metadata("design:returntype", void 0)
+    ], ProjectInput.prototype, "submitHandler", null);
     return ProjectInput;
 }());
 var prjInput = new ProjectInput();
+var activePrjList = new ProjectList('active');
+var finishedPrjList = new ProjectList('finished');
